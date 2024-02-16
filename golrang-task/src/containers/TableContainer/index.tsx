@@ -133,6 +133,14 @@ const TableContainer: FC = () => {
           <Button type="primary" onClick={showModal}>
             Add
           </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              showModal();
+            }}
+          >
+            Update
+          </Button>
         </div>
       </div>
       <br /> <br />
@@ -155,7 +163,10 @@ const TableContainer: FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <CustomForm onSubmit={handleSubmit} />
+        <CustomForm
+          defaultValues={selectedUserId && filteredData[parseInt(selectedUserId) - 1]}
+          onSubmit={handleSubmit}
+        />
       </Modal>
     </div>
   );
