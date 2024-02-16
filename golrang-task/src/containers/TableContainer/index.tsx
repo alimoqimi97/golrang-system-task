@@ -1,7 +1,7 @@
 import { ChangeEvent, FC, useState } from "react";
 import { useTableSearch } from "../../hooks/useTableSearch";
 
-import { Table, Input, Button } from "antd";
+import { Table, Input, Button, TableProps } from "antd";
 import axios from "axios";
 import { userColumns } from "../../constants/columns";
 import { User } from "types";
@@ -51,6 +51,10 @@ const TableContainer: FC = () => {
     retrieve: fetchUsers,
   });
 
+  const onChange: TableProps<User>['onChange'] = (pagination, filters, sorter, extra) => {
+    console.log('params', pagination, filters, sorter, extra);
+  };
+
   return (
     <div>
       <div>
@@ -90,8 +94,10 @@ const TableContainer: FC = () => {
         rowKey="name"
         dataSource={filteredData}
         columns={userColumns}
+        onChange={onChange}
         loading={loading}
         pagination={false}
+        bordered
       />
     </div>
   );
