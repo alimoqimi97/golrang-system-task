@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
+import { User } from "types";
 
-export const useTableSearch = ({ searchVal, retrieve }) => {
+export const useTableSearch = ({
+  searchVal,
+  retrieve,
+}: {
+  searchVal: string;
+  retrieve: any;
+}) => {
   const [filteredData, setFilteredData] = useState([]);
   const [origData, setOrigData] = useState([]);
   const [searchIndex, setSearchIndex] = useState([]);
@@ -8,7 +15,7 @@ export const useTableSearch = ({ searchVal, retrieve }) => {
 
   useEffect(() => {
     setLoading(true);
-    const crawl = (user, allValues) => {
+    const crawl = (user: User, allValues?: any[]) => {
       if (!allValues) allValues = [];
       for (var key in user) {
         if (typeof user[key] === "object") crawl(user[key], allValues);
@@ -20,7 +27,7 @@ export const useTableSearch = ({ searchVal, retrieve }) => {
       const { data: users } = await retrieve();
       setOrigData(users);
       setFilteredData(users);
-      const searchInd = users.map(user => {
+      const searchInd = users.map((user: User) => {
         const allValues = crawl(user);
         return { allValues: allValues.toString() };
       });
@@ -38,7 +45,7 @@ export const useTableSearch = ({ searchVal, retrieve }) => {
         return null;
       });
       setFilteredData(
-        reqData.filter(user => {
+        reqData.filter((user) => {
           if (user) return true;
           return false;
         })

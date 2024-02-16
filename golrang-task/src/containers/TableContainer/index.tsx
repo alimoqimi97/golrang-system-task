@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { ChangeEvent, FC, useState } from 'react';
 import { useTableSearch } from 'hooks/useTableSearch';
 
 import { Table, Input } from 'antd';
@@ -13,22 +13,23 @@ const fetchUsers = async () => {
 };
 
 const TableContainer: FC = () => {
-  const [searchVal, setSearchVal] = useState(null);
+  const [searchVal, setSearchVal] = useState<string>('');
 
-  const { filteredData, loading } = useTableSearch({
-    searchVal,
-    retrieve: fetchUsers,
-  });
+  // const { filteredData, loading } = useTableSearch({
+  //   searchVal,
+  //   retrieve: fetchUsers,
+  // });
   return (
     <div>
       <Search
-        onChange={(e) => setSearchVal(e.target.value)}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchVal(e.target.value)}
         placeholder="Search"
         enterButton
         style={{ position: 'sticky', top: '0', left: '0' }}
       />
       <br /> <br />
-      <Table rowKey="name" dataSource={filteredData} columns={userColumns} loading={loading} pagination={false} />
+      <Table 
+      rowKey="name" dataSource={filteredData} columns={userColumns} loading={loading} pagination={false} />
     </div>
   );
 };
