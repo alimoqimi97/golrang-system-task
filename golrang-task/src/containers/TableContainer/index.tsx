@@ -44,10 +44,26 @@ const createUser = async (user: User) => {
   return response;
 };
 
+const updateUser = async (user: User) => {
+  const response = await axios.put(
+    `https://jsonplaceholder.typicode.com/users/${user?.id}`,
+    {
+      ...user,
+    },
+    {
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    }
+  );
+
+  return response;
+};
+
 const TableContainer: FC = () => {
   const [searchVal, setSearchVal] = useState<string>("");
   const [selectedUserId, setSelectedUserId] = useState<string>();
-
+  const [mode, setMode] = useState<"ADD" | "UPDATE">("ADD");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = () => {
@@ -92,13 +108,23 @@ const TableContainer: FC = () => {
   };
 
   const handleSubmit = async (user: User) => {
-    const newUser: User = {
-      ...user,
-    };
+    const sendRequest = mode === "ADD" ? createUser : updateUser;
 
-    const response = await createUser(user);
+    const response = await sendRequest(user);
 
-    setFilteredData((prevState) => [...prevState, { ...response?.data }]);
+    if (response?.status === 200) {
+      const updatedUser: User = await response?.data;
+      const staleUserIndex = filteredData?.findIndex(
+        (user: User) => user?.id === updatedUser?.id
+      );
+
+      setFilteredData((prevState) => {
+        const newFiltered = [...prevState];
+        newFiltered[staleUserIndex] = updatedUser;
+        return newFiltered;
+      });
+    }
+
     setIsModalOpen(false);
   };
 
@@ -130,12 +156,19 @@ const TableContainer: FC = () => {
           >
             Delete
           </Button>
-          <Button type="primary" onClick={showModal}>
+          <Button
+            type="primary"
+            onClick={() => {
+              setMode("ADD");
+              showModal();
+            }}
+          >
             Add
           </Button>
           <Button
             type="primary"
             onClick={() => {
+              setMode("UPDATE");
               showModal();
             }}
           >
@@ -164,7 +197,9 @@ const TableContainer: FC = () => {
         onCancel={handleCancel}
       >
         <CustomForm
-          defaultValues={selectedUserId && filteredData[parseInt(selectedUserId) - 1]}
+          defaultValues={
+            selectedUserId && filteredData[parseInt(selectedUserId) - 1]
+          }
           onSubmit={handleSubmit}
         />
       </Modal>

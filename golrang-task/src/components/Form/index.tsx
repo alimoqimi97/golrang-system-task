@@ -39,7 +39,11 @@ const CustomForm: FC<ICustomForm> = ({ onSubmit, defaultValues }) => {
       wrapperCol={{ span: 16 }}
       style={{ maxWidth: 600 }}
       onFinish={(values: any) => {
-        onSubmit?.(values);
+        const newUser: User = {
+            id: defaultValues?.id,
+            ...values
+        }
+        onSubmit?.(newUser);
       }}
       onFinishFailed={onFinishFailed}
       autoComplete="off"
