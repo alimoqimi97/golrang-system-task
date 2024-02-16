@@ -8,21 +8,28 @@ export const useTableSearch = ({
   searchVal: string;
   retrieve: any;
 }) => {
-  const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
   const [origData, setOrigData] = useState([]);
   const [searchIndex, setSearchIndex] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const crawl = (user: any, allValues?: any[]) => {
+    if (!allValues) allValues = [];
+    type UserProperty = keyof User;
+
+    for (const key in user) {
+      if (typeof user[key as UserProperty] === "object") {
+        const x = user[key as UserProperty]
+        crawl(x, allValues);
+      } else allValues.push(user[key as UserProperty] + " ");
+    }
+    return allValues;
+  };
+  type CrawlOutputType = ReturnType<typeof crawl>
+  
   useEffect(() => {
     setLoading(true);
-    const crawl = (user: User, allValues?: any[]) => {
-      if (!allValues) allValues = [];
-      for (var key in user) {
-        if (typeof user[key] === "object") crawl(user[key], allValues);
-        else allValues.push(user[key] + " ");
-      }
-      return allValues;
-    };
+
     const fetchData = async () => {
       const { data: users } = await retrieve();
       setOrigData(users);
@@ -39,7 +46,7 @@ export const useTableSearch = ({
 
   useEffect(() => {
     if (searchVal) {
-      const reqData = searchIndex.map((user, index) => {
+      const reqData = searchIndex.map((user: any, index) => {
         if (user.allValues.toLowerCase().indexOf(searchVal.toLowerCase()) >= 0)
           return origData[index];
         return null;

@@ -1,9 +1,9 @@
 import { ChangeEvent, FC, useState } from 'react';
-import { useTableSearch } from 'hooks/useTableSearch';
+import { useTableSearch } from '../../hooks/useTableSearch';
 
 import { Table, Input } from 'antd';
 import axios from 'axios';
-import { userColumns } from '@constants/columns';
+import { userColumns } from '../../constants/columns';
 
 const { Search } = Input;
 
@@ -15,10 +15,10 @@ const fetchUsers = async () => {
 const TableContainer: FC = () => {
   const [searchVal, setSearchVal] = useState<string>('');
 
-  // const { filteredData, loading } = useTableSearch({
-  //   searchVal,
-  //   retrieve: fetchUsers,
-  // });
+  const { filteredData, loading } = useTableSearch({
+    searchVal,
+    retrieve: fetchUsers,
+  });
   return (
     <div>
       <Search
