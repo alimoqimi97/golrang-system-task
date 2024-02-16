@@ -1,8 +1,36 @@
+import { User } from "types";
+
 export const userColumns = [
   {
     title: "Name",
     dataIndex: "name",
     key: "name",
+    filters: [
+      {
+        text: "Joe",
+        value: "Joe",
+      },
+      {
+        text: "Jim",
+        value: "Jim",
+      },
+      {
+        text: 'Submenu',
+        value: 'Submenu',
+        children: [
+          {
+            text: 'Green',
+            value: 'Green',
+          },
+          {
+            text: 'Black',
+            value: 'Black',
+          },
+        ],
+      },
+    ],
+
+    onFilter: (value: any, record: User) => record.name.indexOf(value) === 0,
   },
   {
     title: "Username",
