@@ -60,5 +60,5 @@ export const useTableSearch = ({
     } else setFilteredData(origData);
   }, [searchVal, origData, searchIndex]);
 
-  return { filteredData, loading };
+  return { filteredData, loading, setFilteredData };
 };
