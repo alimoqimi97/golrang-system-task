@@ -6,6 +6,7 @@ import axios from "axios";
 import { userColumns } from "../../constants/columns";
 import { User } from "types";
 import CustomForm from "../../components/Form";
+import useApi from "../../hooks/useApi";
 
 const { Search } = Input;
 
@@ -65,6 +66,29 @@ const TableContainer: FC = () => {
   const [selectedUserId, setSelectedUserId] = useState<string>();
   const [mode, setMode] = useState<"ADD" | "UPDATE">("ADD");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const getApi = useApi({
+    key: ["users"],
+    method: "GET",
+    url: `users`,
+  })?.get;
+
+  const updateApi = useApi({
+    key: ["users"],
+    method: "PUT",
+    url: `users/`,
+  })?.put;
+
+  const deleteApi = useApi({
+    key: ["users"],
+    method: "DELETE",
+    url: `users`,
+  })?.deleteObj;
+
+  const postApi = useApi({
+    key: ["users"],
+    method: "POST",
+    url: `users`,
+  })?.post;
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -95,7 +119,7 @@ const TableContainer: FC = () => {
 
   const { filteredData, loading, setFilteredData } = useTableSearch({
     searchVal,
-    retrieve: fetchUsers,
+    retrieve: getApi?.refetch,
   });
 
   const onChange: TableProps<User>["onChange"] = (
@@ -108,22 +132,46 @@ const TableContainer: FC = () => {
   };
 
   const handleSubmit = async (user: User) => {
-    const sendRequest = mode === "ADD" ? createUser : updateUser;
+    const sendRequest =
+      mode === "ADD"
+        ? () =>
+            postApi?.mutate(user, {
+              onSuccess: (response) => {
+                setFilteredData((prevState) => [...prevState, { ...response }]);
+              },
+            })
+        : () =>
+            updateApi?.mutate(user, {
+              onSuccess: (response) => {
+                const updatedUser: User = response;
+                const staleUserIndex = filteredData?.findIndex(
+                  (user: User) => user?.id === updatedUser?.id
+                );
 
-    const response = await sendRequest(user);
+                setFilteredData((prevState) => {
+                  const newFiltered = [...prevState];
+                  newFiltered[staleUserIndex] = updatedUser;
+                  return newFiltered;
+                });
+              },
+            });
 
-    if (response?.status === 200) {
-      const updatedUser: User = await response?.data;
-      const staleUserIndex = filteredData?.findIndex(
-        (user: User) => user?.id === updatedUser?.id
-      );
+    const response = sendRequest();
 
-      setFilteredData((prevState) => {
-        const newFiltered = [...prevState];
-        newFiltered[staleUserIndex] = updatedUser;
-        return newFiltered;
-      });
-    }
+    console.log("xxx:", response);
+
+    // if (response?.status === 200) {
+    //   const updatedUser: User = await response?.data;
+    //   const staleUserIndex = filteredData?.findIndex(
+    //     (user: User) => user?.id === updatedUser?.id
+    //   );
+
+    //   setFilteredData((prevState) => {
+    //     const newFiltered = [...prevState];
+    //     newFiltered[staleUserIndex] = updatedUser;
+    //     return newFiltered;
+    //   });
+    // }
 
     setIsModalOpen(false);
   };
@@ -144,14 +192,17 @@ const TableContainer: FC = () => {
             type="primary"
             danger
             onClick={async () => {
-              const response = await deleteUser(selectedUserId ?? "");
-              if (response?.status === 200) {
-                setFilteredData(
-                  filteredData?.filter(
-                    (user: User) => user?.id?.toString() !== selectedUserId
-                  )
-                );
-              }
+              // const response = await deleteUser(selectedUserId ?? "");
+              deleteApi?.mutate(selectedUserId ?? "", {
+                onSuccess: (data) => {
+                  setFilteredData(
+                    filteredData?.filter(
+                      (user: User) => user?.id?.toString() !== selectedUserId
+                    )
+                  );
+                }
+              });
+              
             }}
           >
             Delete
