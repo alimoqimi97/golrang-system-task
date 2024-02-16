@@ -1,10 +1,11 @@
 import { ChangeEvent, FC, useState } from "react";
 import { useTableSearch } from "../../hooks/useTableSearch";
 
-import { Table, Input, Button, TableProps } from "antd";
+import { Table, Input, Button, TableProps, Modal } from "antd";
 import axios from "axios";
 import { userColumns } from "../../constants/columns";
 import { User } from "types";
+import CustomForm from "../../components/Form";
 
 const { Search } = Input;
 
@@ -27,9 +28,39 @@ const deleteUser = async (id: string) => {
   return response;
 };
 
+const createUser = async (user: User) => {
+  const response = axios.post(
+    "https://jsonplaceholder.typicode.com/users",
+    {
+      ...user,
+    },
+    {
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    }
+  );
+
+  return response;
+};
+
 const TableContainer: FC = () => {
   const [searchVal, setSearchVal] = useState<string>("");
   const [selectedUserId, setSelectedUserId] = useState<string>();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
 
   const rowSelection = {
     onChange: (selectedRowKeys: React.Key[], selectedRows: User[]) => {
@@ -51,8 +82,24 @@ const TableContainer: FC = () => {
     retrieve: fetchUsers,
   });
 
-  const onChange: TableProps<User>['onChange'] = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra);
+  const onChange: TableProps<User>["onChange"] = (
+    pagination,
+    filters,
+    sorter,
+    extra
+  ) => {
+    console.log("params", pagination, filters, sorter, extra);
+  };
+
+  const handleSubmit = async (user: User) => {
+    const newUser: User = {
+      ...user,
+    };
+
+    const response = await createUser(user);
+
+    setFilteredData((prevState) => [...prevState, { ...response?.data }]);
+    setIsModalOpen(false);
   };
 
   return (
@@ -83,6 +130,9 @@ const TableContainer: FC = () => {
           >
             Delete
           </Button>
+          <Button type="primary" onClick={showModal}>
+            Add
+          </Button>
         </div>
       </div>
       <br /> <br />
@@ -99,6 +149,14 @@ const TableContainer: FC = () => {
         pagination={false}
         bordered
       />
+      <Modal
+        title="Basic Modal"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <CustomForm onSubmit={handleSubmit} />
+      </Modal>
     </div>
   );
 };
